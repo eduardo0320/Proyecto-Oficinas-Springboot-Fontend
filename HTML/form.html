@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Metadatos del documento: especifica el conjunto de caracteres UTF-8 -->
+    <meta charset="UTF-8">
+    <!-- Título de la página -->
+    <title>Crud de personas</title>
+    <!-- Vinculación a los estilos de Bootstrap para darle un diseño responsivo y moderno -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Scripts necesarios para el funcionamiento de Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+            crossorigin="anonymous"></script>
+
+    <script src="../JS/notificaciones.js"></script>
+    <!-- Conexión con el script de persona.js que gestiona la lógica de los datos de personas -->
+    <script src="../JS/persona.js"></script>
+
+    <!-- Script propio que contiene funciones relacionadas a oficinas -->
+    <script src="../JS/oficina.js"></script> <!--conecta-->
+    <!-- Conexión con los íconos de Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <!-- Conexión con el script de autenticación -->
+    <script src="../JS/auth.js"></script>
+    <!-- Llamada a la función de verificar autenticación cuando se carga la página -->
+    <script>verificarAutenticacion();</script>
+    <script>
+        document.addEventListener("DOMContentLoaded", async function () {
+            await cargarOficinasSelect();
+            let index = localStorage.getItem("editIndex");
+            let rol = await obtenerRol();
+
+            if (index !== null && rol !== "ADMIN") {
+                alert("No tienes permiso para editar personas.");
+                localStorage.removeItem("editIndex");
+                window.location.href = "index.html";
+                return;
+            }
+
+            if (index !== null) {
+                let persona = await obtenerPersona(index);
+
+                if (!persona) {
+                    localStorage.removeItem("editIndex");
+                    window.location.href = "index.html";
+                    return;
+                }
+
+                document.getElementById("idUsuario").value = persona.idUsuario;
+                document.getElementById("nombre").value = persona.nombre
+                document.getElementById("email").value = persona.email
+                document.getElementById("direccion").value = persona.direccion;
+                document.getElementById("fechaNacimiento").value = persona.fechaNacimiento;
+                document.getElementById("telefono").value = persona.telefono;
+                document.getElementById("cargo").value = persona.cargo;
+                document.getElementById("oficina").value = String(persona.oficina?.id ?? persona.oficina ?? "");
+                document.getElementById("estado").value = persona.estado;
+                document.getElementById("enOficina").value = persona.enOficina;
+
+
+
+            }
+
+
+        })
+
+
+    </script>
+</head>
+<body>
+
+<!-- Notificaciones -->
+<div class="toast-container position-fixed top-0 end-0 p-3">
+    <div id="toast" class="toast align-items-center border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body" id="toast-mensaje"></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+<!-- Barra de navegación: contiene enlaces a otras secciones de la aplicación -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center" href="index.html">
+            <i class="bi bi-emoji-smile-fill me-2" style="font-size: 1.5rem;"></i>
+            Proyecto Demostración
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="index.html">Lista de Personas</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="oficina.html">Lista de Oficinas</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="registro_ingresos.html"> Registros</a>
+                </li>
+
+                <!-- Enlace a la sección de registros -->
+                <li class="nav-item">
+                    <a class="nav-link" href="estadisticas.html"> Estadisticas</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-danger fw-bold" href="login.html">Cerrar sesión</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Formulario para el CRUD de personas: permite agregar o editar una persona -->
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Crud de personas</h1>
+    <form id="formpersona" class="needs-validation" novalidate onsubmit="guardarPersona(event)">
+        <div class="row mb-3">
+
+            <input type="hidden" id="enOficina">
+
+            <div class="col-md-6">
+                <label for="idUsuario" class="form-label">Cedula</label>
+                <input type="text" id="idUsuario" class="form-control" required/>
+                <div class="invalid-feedback">
+                    ID invalida.
+                </div>
+            </div>
+            <div class="col-md-6">
+                <label for="nombre" class="form-label">Nombre</label>
+                <input type="text" id="nombre" class="form-control" required/>
+                <div class="invalid-feedback">
+                    Nombre invalido.
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <label for="email" class="form-label">Correo</label>
+                <input type="email" id="email" class="form-control" required/>
+                <div class="invalid-feedback">
+                    Correo invalido.
+                </div>
+            </div>
+
+
+            <div class="col-md-6">
+                <label for="direccion" class="form-label">Dirección</label>
+                <input type="text" id="direccion" class="form-control" required/>
+                <div class="invalid-feedback">
+                    Dirección invalida.
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <label for="fechaNacimiento" class="form-label">Fecha de nacimiento</label>
+                <input type="date" id="fechaNacimiento" class="form-control" required/>
+                <div class="invalid-feedback">
+                    Fecha de nacimiento invalida.
+                </div>
+            </div>
+            <div class="col-md-6">
+                <label for="telefono" class="form-label"><i class="bi bi-telephone-fill"></i> Teléfono</label>
+                <input type="text" id="telefono" class="form-control" required/>
+            </div>
+            <div class="col-md-6">
+                <label for="cargo" class="form-label"><i class="bi bi-briefcase-fill"></i> Cargo</label>
+                <input type="text" id="cargo" class="form-control" required/>
+            </div>
+            <div class="col-md-6">
+                <label for="estado" class="form-label"><i class="bi bi-toggle-on"></i> Estado</label>
+                <select id="estado" class="form-control" required>
+                    <option value="Activo">Activo</option>
+                    <option value="Inactivo">Inactivo</option>
+                </select>
+            </div>
+           <div class="col-md-6">
+                 <label for="oficina" class="form-label">
+                <i class="bi bi-person"></i> Seleccionar Oficina
+            </label>
+                <select id="oficina" class="form-control" required>
+                    <option value="" disabled selected>Seleccione una oficina</option>
+                </select>
+                <div class="invalid-feedback">
+                    Debe seleccionar una oficina
+                </div>
+            </div>
+            <div class="col-md-12 text-center mt-4">
+                <button type="submit" class="btn btn-light text-white me-2" style="background-color: #C8A2C8;">
+                    <i class="bi bi-bookmark-fill"></i> Guardar
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="window.location.href='index.html'">
+                    <i class="bi bi-bookmark-x-fill"></i> Cancelar
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Pie de página -->
+<footer class="bg-dark text-white text-center py-3 position-fixed bottom-0 w-100">
+    &copy; Proyecto Demostración
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"> <!-- Codificación de caracteres en UTF-8 -->
+  <title>Crud de oficinas</title> <!-- Título que se muestra en la pestaña del navegador -->
+
+  <!-- Vincula Bootstrap para estilos rápidos y responsivos -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-..." crossorigin="anonymous">
+
+  <!-- Bootstrap JS para funciones como el menú responsive -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-..." crossorigin="anonymous"></script>
+
+  <script src="../JS/notificaciones.js"></script>
+
+  <script src="../JS/oficina.js"></script> <!-- Script propio para gestionar oficinas (CRUD) -->
+
+  <!-- Íconos de Bootstrap (para los íconos de mapa, guardar, etc.) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+
+  <script src="../JS/auth.js"></script> <!-- Script para gestionar la autenticación del usuario -->
+
+  <script>verificarAutenticacion();</script> <!-- Verifica si el usuario está autenticado antes de mostrar la página -->
+
+  <!-- Script para rellenar el formulario si se está editando una oficina -->
+  <script>
+    document.addEventListener("DOMContentLoaded",async function (){
+      let index = localStorage.getItem("editIndex");
+      if(index !== null){
+        let oficina = await obtenerOficina(index);
+        document.getElementById("nombre").value = oficina.nombre;
+        document.getElementById("direccion").value = oficina.direccion
+        document.getElementById("cantidad_maxima").value = oficina.cantidad_maxima;
+        document.getElementById("ingresos_activos").value = oficina.ingresos_activos;
+
+        if (oficina.direccion && oficina.direccion.includes("Lat:")) {
+          localStorage.setItem("editLatLng", JSON.stringify(oficina.direccion));
+        }
+      } else {
+        // Si es nuevo, limpiar posibles restos
+        localStorage.removeItem("editLatLng");
+      }
+      initMap();
+
+
+
+
+
+
+
+
+    })
+
+
+
+  </script>
+</head>
+<body>
+
+<!-- Toast -->
+<div class="toast-container position-fixed top-0 end-0 p-3">
+  <div id="toast" class="toast align-items-center border-0" role="alert">
+    <div class="d-flex">
+      <div class="toast-body" id="toast-mensaje"></div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+
+<!-- Barra de navegación superior -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container">
+    <!-- Logo y nombre -->
+    <a class="navbar-brand d-flex align-items-center" href="index.html">
+      <i class="bi bi-emoji-smile-fill me-2" style="font-size: 1.5rem;"></i> <!-- Ícono -->
+      Proyecto Demostración
+    </a>
+    <!-- Botón para mostrar menú en pantallas pequeñas -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Elementos del menú -->
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav">
+        <!-- Enlaces de navegación -->
+        <li class="nav-item">
+          <a class="nav-link" href="index.html">Lista de Personas</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="oficina.html">Lista de Oficinas</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="registro_ingresos.html"> Registros</a>
+        </li>
+
+        <!-- Enlace a la sección de registros -->
+        <li class="nav-item">
+          <a class="nav-link" href="estadisticas.html"> Estadisticas</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-danger fw-bold" href="login.html">Cerrar sesión</a> <!-- Cierre de sesión -->
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Contenedor principal -->
+<div class="container mt-4">
+  <h1 class="text-center mb-4">Crud de oficinas</h1> <!-- Título -->
+
+  <!-- Formulario para agregar/editar oficinas -->
+  <form id="formoficina" class="needs-validation" novalidate onsubmit="guardarOficina(event)">
+    <div class="row mb-3">
+
+      <input type="hidden" id="ingresos_activos">
+
+      <!-- Campo: nombre de la oficina -->
+      <div class="col-md-6">
+        <label for="nombre" class="form-label">
+          <i class="bi bi-geo-alt-fill"></i> Nombre
+        </label>
+        <input type="text" id="nombre" class="form-control" required/>
+        <div class="invalid-feedback">
+          Invalido
+        </div>
+      </div>
+
+<!--      <div class="col-md-6">-->
+<!--        <label for="direccion" class="form-label">-->
+<!--          <i class="bi bi-geo-alt-fill"></i> Direccion-->
+<!--        </label>-->
+<!--        <input type="text" id="direccion" class="form-control" required/>-->
+<!--        <div class="invalid-feedback">-->
+<!--          Invalido-->
+<!--        </div>-->
+<!--      </div>-->
+
+
+
+
+
+      <!-- Campo: ubicación con mapa (Google Maps) -->
+      <div class="col-md-12">
+        <label for="direccion" class="form-label">
+          <i class="bi bi-geo-alt-fill"></i> Direccion
+        </label>
+        <div id="map" style="height: 400px; width: 60%;"></div> <!-- Mapa -->
+        <input type="hidden" id="direccion" name="ubicacion" /> <!-- Dato oculto con la ubicación -->
+      </div>
+
+      <!-- Campo: cantidad máxima de personas en la oficina -->
+      <div class="col-md-6">
+        <label for="cantidad_maxima" class="form-label">
+          <i class="bi bi-geo-alt-fill"></i> Cantidad Maxima
+        </label>
+        <input type="text" id="cantidad_maxima" class="form-control" required/>
+        <div class="invalid-feedback">
+          Invalido
+        </div>
+      </div>
+
+      <!-- Botones de acción -->
+      <div class="col-md-12 text-center mt-4 mb-5">
+        <!-- Botón guardar -->
+        <button type="submit" class="btn btn-light text-white me-2" style="background-color: #C8A2C8;">
+          <i class="bi bi-bookmark-fill"></i> Guardar
+        </button>
+        <!-- Botón cancelar -->
+        <button type="button" class="btn btn-secondary" onclick="window.location.href='oficina.html'">
+          <i class="bi bi-bookmark-x-fill"></i> Cancelar
+        </button>
+      </div>
+
+    </div>
+  </form>
+</div>
+
+<!-- Carga del script de Google Maps con clave API y callback a `initMap` -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD7P7ZZfLzxg8A9mqYOrKl0zucKpaix4g8&callback=initMap" async defer></script>
+
+
+
+<!-- Pie de página fijo al final de la pantalla -->
+<footer class="bg-dark text-white text-center py-3 position-fixed bottom-0 w-100">
+  &copy; Proyecto Demostración
+</footer>
+
+</body>
+</html>
+

@@ -1,0 +1,82 @@
+/* Estilos generales */
+body {
+    background-color: #f8f9fa; /* Establece un fondo claro y suave para toda la página */
+    font-family: Arial, sans-serif; /* Define la fuente de texto como Arial, que es sans-serif */
+}
+
+/* Navbar */
+.navbar {
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Agrega una sombra sutil debajo de la barra de navegación para darle profundidad */
+}
+
+.navbar-brand img {
+    border-radius: 50%; /* Hace que las imágenes dentro de la clase navbar-brand sean redondas */
+}
+
+/* Contenedor principal */
+.container {
+    background-color: white; /* Fondo blanco para el contenedor */
+    padding: 20px; /* Agrega un espacio interior alrededor del contenido */
+    border-radius: 10px; /* Bordes redondeados para un estilo más suave */
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Sombra para hacer que el contenedor destaque visualmente */
+}
+
+/* Tabla */
+.table th {
+    text-align: center; /* Alinea los encabezados de las tablas al centro */
+}
+
+.table td {
+    vertical-align: middle; /* Alinea el contenido de las celdas verticalmente al centro */
+    text-align: center; /* Alinea el contenido de las celdas horizontalmente al centro */
+}
+
+/* Botón de agregar persona */
+.btn-light {
+    border-radius: 20px; /* Bordes redondeados en los botones para un estilo más amigable */
+    font-weight: bold; /* Hace que el texto del botón sea más negrito y destacado */
+    transition: 0.3s; /* Transición suave cuando se cambia el estado del botón */
+}
+
+.btn-light:hover {
+    background-color: #a57fa5; /* Cambia el color de fondo cuando el usuario pasa el cursor sobre el botón */
+}
+
+/* Mensaje vacío */
+#mensaje-vacio {
+    font-size: 18px; /* Tamaño de fuente más grande para los mensajes vacíos */
+    font-style: italic; /* Estilo de fuente en cursiva para dar énfasis */
+}
+
+/* Contenedor adicional con canvas */
+.container {
+    width: 300px; /* Ajusta el tamaño del contenedor */
+    height: 200px; /* Altura del contenedor */
+    margin: auto; /* Centra el contenedor en la página */
+}
+
+/* Canvas */
+canvas {
+    width: 100% !important; /* Hace que el canvas ocupe todo el ancho disponible del contenedor */
+    height: 100% !important; /* Hace que el canvas ocupe toda la altura disponible del contenedor */
+}
+
+canvas {
+    width: 100% !important;  /* Asegúrate de que los gráficos ocupen todo el ancho disponible */
+    height: 300px !important;  /* Ajusta la altura según sea necesario */
+}
+
+/* Asegúrate de que el contenedor de los gráficos tenga suficiente espacio */
+#grafico-personas-ingresos,
+#grafico-oficinas-ingresos,
+#personas-en-oficina{
+    margin-bottom: 50px;  /* Espacio adicional en la parte inferior */
+}
+
+/* O, si el footer tiene un tamaño fijo, agrega un padding en la parte inferior */
+body {
+    padding-bottom: 100px; /* Ajusta según sea necesario */
+}
+
+
+

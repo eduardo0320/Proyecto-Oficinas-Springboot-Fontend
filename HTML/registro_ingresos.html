@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de Personas</title>
+
+    <!-- Bootstrap CSS para estilos y diseño responsivo -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+    <!-- Bootstrap JS para funcionalidades como el menú desplegable -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+            crossorigin="anonymous"></script>
+
+    <!-- Librería Chart.js para generar gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Iconos de Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+
+    <!-- Librería jsPDF para exportar a PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- Librería xlsx para exportar a Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <script src="../JS/notificaciones.js"></script>
+
+    <!-- Script de autenticación -->
+    <script src="../JS/auth.js"></script>
+
+    <!-- Script que contiene la lógica de los registros de ingresos -->
+    <script src="../JS/registro_ingreso.js"></script>
+
+    <!-- Verifica si el usuario está autenticado al cargar la página -->
+    <script>verificarAutenticacion();</script>
+</head>
+<body>
+
+<!-- Toast -->
+<div class="toast-container position-fixed top-0 end-0 p-3">
+    <div id="toast" class="toast align-items-center border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body" id="toast-mensaje"></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+<!-- Barra de navegación -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <!-- Logo y nombre del sitio -->
+        <a class="navbar-brand d-flex align-items-center" href="#">
+            <i class="bi bi-emoji-smile-fill me-2" style="font-size: 1.5rem;"></i>
+            Proyecto Demostración
+        </a>
+        <!-- Botón para colapsar el menú en pantallas pequeñas -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Menú de navegación -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+
+                <li class="nav-item" id="nav1">
+                    <a class="nav-link" href="index.html">Lista de Personas</a>
+                </li>
+                <!-- Enlace a la lista de oficinas -->
+                <li class="nav-item" id="nav2">
+                    <a class="nav-link" href="oficina.html">Lista de Oficinas</a>
+                </li>
+
+                <!-- Enlace a los registros -->
+                <li class="nav-item">
+                    <a class="nav-link" href="registro_ingresos.html"> Registros</a>
+                </li>
+                <!-- Enlace a la sección de registros -->
+                <li class="nav-item">
+                    <a class="nav-link" href="estadisticas.html"> Estadisticas</a>
+                </li>
+                <!-- Enlace para cerrar sesión -->
+                <li class="nav-item">
+                    <a class="nav-link text-danger fw-bold" href="login.html">Cerrar sesión</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Contenido principal -->
+<div class="container mt-4">
+    <!-- Título principal -->
+    <h1 class="text-center mb-4">
+        <i class="bi bi-box-arrow-in-left"></i> Llegadas y Salidas
+    </h1>
+
+    <!-- Mensaje cuando no hay datos -->
+    <p id="mensaje-vacio" class="text-center text-muted" style="display: none;">No hay datos disponibles</p>
+
+    <!-- Botones de acción -->
+    <div class="d-flex align-items-center gap-2 mb-3">
+        <!-- Botón para agregar nuevo registro -->
+        <button id="btn3" class="btn btn-light text-white" style="background-color: #C8A2C8; display: none" onclick="window.location.href='form_registro_ingresos.html';">
+            <i class="bi bi-box-arrow-in-right"></i> Agregar Registro
+        </button>
+
+        <!-- Botón para exportar registros a PDF -->
+        <button class="btn btn-light text-white" style="background-color: #C8A2C8;" onclick="exportarRegistrosPDF()">
+            <i class="bi bi-file-earmark-pdf"></i> Exportar Registros a PDF
+        </button>
+
+        <!-- Botón para exportar registros a Excel -->
+        <button class="btn btn-light text-white" style="background-color: #C8A2C8;" onclick="exportarRegistrosExcel()">
+            <i class="bi bi-file-earmark-excel"></i> Exportar Registros a Excel
+        </button>
+    </div>
+
+    <!-- Tabla de registros -->
+    <div class="table-responsive mt-5">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Persona</th>
+                <th>Oficina</th>
+                <th>Tipo registro</th>
+                <th>Fecha</th>
+                <th>Hora</th>
+
+
+            </tr>
+            </thead>
+
+            <tbody id="registro_ingresos-list">
+            </tbody>
+        </table>
+
+        <div id="botones-pagina-registros" class="d-flex flex-wrap justify-content-center gap-2"></div>
+
+        <!-- Script que se ejecuta cuando la página termina de cargar -->
+        <script type="text/javascript">
+            document.addEventListener("DOMContentLoaded", function () {
+                cargarRegistros(0); // Carga los datos de los registros
+                localStorage.removeItem("editIndex"); // Limpia la edición anterior
+            });
+        </script>
+    </div>
+
+    <!-- Contenedor para la paginación -->
+    <div class="text-center mt-3">
+        <div id="paginacion"></div>
+    </div>
+</div>
+
+
+<!-- Script para cargar automáticamente las oficinas al cargar la página -->
+<script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", async function (){
+        cargarRegistros(0);
+        let rol = await obtenerRol();
+        if(rol==="ADMIN" || rol==="REGISTRADOR") {
+            document.getElementById("btn3").style.display = "inline-block";
+        }
+        localStorage.removeItem("editIndex");
+        if(rol==="REGISTRADOR"){
+            document.getElementById("nav1").style.display = "none";
+            document.getElementById("nav2").style.display = "none";
+        }
+    });
+</script>
+
+<!-- Pie de página -->
+<footer class="bg-dark text-white text-center py-3 position-fixed bottom-0 w-100">
+    &copy; Proyecto Demostración
+</footer>
+
+</body>
+</html>
+
